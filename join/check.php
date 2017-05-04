@@ -20,7 +20,7 @@
     $sql = sprintf('INSERT INTO `members` (`nick_name`, `email`, `password`, `picture_path`, `created`, `modified`) VALUES ("%s", "%s", "%s", "%s", now(), now());',
       mysqli_real_escape_string($db,$_SESSION['join']['nick_name']),
       mysqli_real_escape_string($db,$_SESSION['join']['email']),
-      mysqli_real_escape_string($db,$_SESSION['join']['password']),
+      mysqli_real_escape_string($db,sha1($_SESSION['join']['password'])),
       mysqli_real_escape_string($db,$_SESSION['join']['picture_path'])
       );
 
@@ -40,11 +40,11 @@
     <title>SeedSNS</title>
 
     <!-- Bootstrap -->
-    <link href="../../assets/css/bootstrap.css" rel="stylesheet">
-    <link href="../../assets/font-awesome/css/font-awesome.css" rel="stylesheet">
-    <link href="../../assets/css/form.css" rel="stylesheet">
-    <link href="../../assets/css/timeline.css" rel="stylesheet">
-    <link href="../../assets/css/main.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap.css" rel="stylesheet">
+    <link href="../assets/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="../assets/css/form.css" rel="stylesheet">
+    <link href="../assets/css/timeline.css" rel="stylesheet">
+    <link href="../assets/css/main.css" rel="stylesheet">
     <!--
       designフォルダ内では2つパスの位置を戻ってからcssにアクセスしていることに注意！
      -->
@@ -110,8 +110,8 @@
   </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="../../assets/js/jquery-3.1.1.js"></script>
-    <script src="../../assets/js/jquery-migrate-1.4.1.js"></script>
-    <script src="../../assets/js/bootstrap.js"></script>
+    <script src="../assets/js/jquery-3.1.1.js"></script>
+    <script src="../assets/js/jquery-migrate-1.4.1.js"></script>
+    <script src="../assets/js/bootstrap.js"></script>
   </body>
 </html>
