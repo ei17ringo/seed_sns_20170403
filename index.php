@@ -1,3 +1,56 @@
+<?php
+      session_start();
+
+      //ログイン状態のチェック
+      //ログインしてると判断できる条件
+      // 1.セッションにidが入ってること
+      // 2.最後の行動から1時間以内であること
+      if ((isset($_SESSION['login_member_id'])) && ($_SESSION['time'] + 3600 > time()) ){
+
+        //ログインしてる
+        //セッションの時間を更新
+        $_SESSION['time'] = time();
+
+      }else{
+        //ログインしてない
+        header('Location: login.php');
+        exit();
+      }
+
+      // dbconnect.phpを読み込む
+      require('dbconnect.php');
+
+      // ログインしている人の情報を取得（名前を表示）
+
+      //SQL実行し、ユーザーのデータを取得
+      $sql = sprintf('SELECT * FROM `members` WHERE `member_id` = %d',
+        mysqli_real_escape_string($db,$_SESSION['login_member_id']));
+      
+      $record = mysqli_query($db,$sql) or die(mysqli_error($db));
+      $member = mysqli_fetch_assoc($record);
+
+
+      // DB登録処理
+      if (!empty($_POST)){
+        // 補足：つぶやきが空っぽではない時だけ、Insertする
+        $tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');      
+        $login_member_id = $_SESSION['login_member_id'];
+        $reply_tweet_id = 0;
+
+        $sql = sprintf('INSERT INTO `tweets` (`tweet`, `member_id`, `reply_tweet_id`,`created`, `modified`) VALUES ("%s", "%s", "%s", now(), now());',
+        mysqli_real_escape_string($db,$tweet),
+        mysqli_real_escape_string($db,$login_member_id),
+        mysqli_real_escape_string($db,$reply_tweet_id)
+        );
+
+        mysqli_query($db,$sql) or die(mysqli_error($db));
+
+        //これをつけると、再読み込みでPOST送信が発生しなくなる！
+        header("Location: index.php");
+        exit();
+
+      }
+?>
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -42,7 +95,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ●●さん！</legend>
+        <legend>ようこそ<?php echo $member['nick_name']; ?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
