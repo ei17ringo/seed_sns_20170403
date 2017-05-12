@@ -33,9 +33,15 @@
       // DB登録処理
       if (!empty($_POST)){
         // 補足：つぶやきが空っぽではない時だけ、Insertする
-        $tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');      
+        //$tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');
+        $tweet = h($_POST['tweet']);      
         $login_member_id = $_SESSION['login_member_id'];
-        $reply_tweet_id = 0;
+
+        if (isset($_POST['reply_tweet_id'])){
+            $reply_tweet_id = $_POST['reply_tweet_id'];
+        }else{
+            $reply_tweet_id = 0;          
+        }
 
         $sql = sprintf('INSERT INTO `tweets` (`tweet`, `member_id`, `reply_tweet_id`,`created`, `modified`) VALUES ("%s", "%s", "%s", now(), now());',
         mysqli_real_escape_string($db,$tweet),
@@ -73,6 +79,13 @@
       		$reply_post = '@'.$reply_table['nick_name'].' '.$reply_table['tweet'];
       }
 
+      // $input_value:引数
+      // h:関数名
+      // return oo :戻り値
+      function h($input_value){
+        $returnvalue = htmlspecialchars($input_value,ENT_QUOTES,'UTF-8'); 
+        return $returnvalue;
+      }
 
 ?>
 <!DOCTYPE html>
@@ -153,9 +166,12 @@
             [<a href="index.php?res=<?php echo $tweet_each['tweet_id']; ?>">Re</a>]
           </p>
           <p class="day">
-            <a href="view.html">
+            <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
               <?php echo $tweet_each['created']; ?>
             </a>
+            <?php if($tweet_each['reply_tweet_id'] > 0){ ?>
+            | <a href="view.php?tweet_id=<?php echo $tweet_each['reply_tweet_id']; ?>">返信元のつぶやき</a>
+            <?php } ?>
             [<a href="#" style="color: #00994C;">編集</a>]
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
