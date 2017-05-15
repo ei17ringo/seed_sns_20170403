@@ -59,7 +59,7 @@
 
       //投稿を取得する
       // $sql = 'SELECT * FROM `tweets`;';
-      $sql = 'SELECT `members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id`';
+      $sql = 'SELECT `members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `delete_flag`=0';
       $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
       
       $tweets_array = array();
@@ -172,8 +172,10 @@
             <?php if($tweet_each['reply_tweet_id'] > 0){ ?>
             | <a href="view.php?tweet_id=<?php echo $tweet_each['reply_tweet_id']; ?>">返信元のつぶやき</a>
             <?php } ?>
+            <?php if ($_SESSION['login_member_id'] == $tweet_each['member_id']){ ?> 
             [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
+            [<a href="delete.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
           </p>
         </div>
         <?php } ?>
