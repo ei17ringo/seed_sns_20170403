@@ -1,11 +1,11 @@
 <?php
-
+  session_start();
   require('dbconnect.php');
 
   if (isset($_REQUEST['tweet_id'])){
 
     //　SQLを実行
-    $sql = 'SELECT `members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweets`.`tweet_id`='.$_REQUEST['tweet_id'];
+    $sql = 'SELECT `members`.`member_id`,`members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweets`.`tweet_id`='.$_REQUEST['tweet_id'];
       $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
       
       $tweet = mysqli_fetch_assoc($tweets);
@@ -66,7 +66,9 @@
           </p>
           <p class="day">
             <?php echo $tweet['created']; ?>
-            [<a href="#" style="color: #F33;">削除</a>]
+            <?php if ($_SESSION['login_member_id'] == $tweet['member_id']){ ?> 
+            [<a href="delete.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>

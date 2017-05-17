@@ -56,10 +56,45 @@
         exit();
 
       }
+      //ページング処理
+
+      // 0.ページ番号を取得（ある場合はGET送信、ない場合1ページ目と認識する）
+      $page = '';
+
+      // GET送信されてきたページ番号を取得
+      if (isset($_GET['page'])){
+        $page = $_GET['page'];
+      }
+
+      //ないときは1ページ目
+      if ($page == ''){
+        $page = 1;
+      }
+
+      // 1.表示する正しいページの数値を設定（Min）
+      $page = max($page,1);
+
+      // 2.必要なベージ数を計算
+      // 1ページに表示する行数
+      $row = 5;
+      $sql = 'SELECT COUNT(*) as cnt FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`created` DESC';
+
+      $record_cnt = mysqli_query($db, $sql) or die(mysqli_error($db));
+
+      $table_cnt = mysqli_fetch_assoc($record_cnt);
+      // ceil() :切り上げする関数
+      $maxPage = ceil($table_cnt['cnt'] / $row);
+ 
+      // 3.表示する正しいページ数の数値を設定（Max）
+      $page = min($page,$maxPage);
+
+      // 4.ページに表示する件数だけ取得
+      $start = ($page -1) * $row;
+
 
       //投稿を取得する
       // $sql = 'SELECT * FROM `tweets`;';
-      $sql = 'SELECT `members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `delete_flag`=0';
+      $sql = sprintf('SELECT `members`.`nick_name`,`members`.`picture_path`,`tweets`.* FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `delete_flag`=0 ORDER BY `created` DESC LIMIT %d,%d',$start,$row);
       $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
       
       $tweets_array = array();
@@ -149,7 +184,13 @@
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <li>
+                <?php if ($page > 1){ ?>
+                <a href="index.php?page=<?php echo $page-1; ?>" class="btn btn-default">前</a>
+                <?php }else{ ?>
+                  前
+                <?php } ?>
+                </li>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
                 <li><a href="index.html" class="btn btn-default">次</a></li>
           </ul>
@@ -157,6 +198,11 @@
       </div>
 
       <div class="col-md-8 content-margin-top">
+        <!-- 検索ボックス -->
+        <form action="" method="get" class="form-horizontal">
+          <input type="text" name="search_word">
+          <input type="submit" class="btn btn-success btn-xs" value="検索">
+        </form>
         <!-- ここでつぶやいた内容を繰り返し表示する -->
         <?php foreach ($tweets_array as $tweet_each) { ?>
           <div class="msg">
@@ -173,7 +219,7 @@
             | <a href="view.php?tweet_id=<?php echo $tweet_each['reply_tweet_id']; ?>">返信元のつぶやき</a>
             <?php } ?>
             <?php if ($_SESSION['login_member_id'] == $tweet_each['member_id']){ ?> 
-            [<a href="#" style="color: #00994C;">編集</a>]
+            [<a href="edit.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>" style="color: #00994C;">編集</a>]
             [<a href="delete.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>" style="color: #F33;">削除</a>]
             <?php } ?>
           </p>
