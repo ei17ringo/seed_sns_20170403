@@ -77,7 +77,7 @@
       // 2.必要なベージ数を計算
       // 1ページに表示する行数
       $row = 5;
-      // キーワードで検索された場合
+      // キーワードで検索された場合(投稿数の取得)
       if (isset($_GET['search_word']) && !empty($_GET['search_word'])){
         $sql = sprintf('SELECT COUNT(*) as cnt FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `delete_flag`=0 AND `tweet` LIKE "%%%s%%" ORDER BY `tweets`.`created` DESC',
           mysqli_real_escape_string($db,$_GET['search_word']));
@@ -115,6 +115,9 @@
       
       $tweets_array = array();
       while ($tweet = mysqli_fetch_assoc($tweets)) {
+        // $tweetには$tweet['tweet_id']が含まれている
+        $sql = 'SELECT COUNT(*) as `like_flag` FROM `likes` WHERE `tweet_id` = '.$tweet['tweet_id'].' AND `member_id` = '.$_SESSION['login_member_id'];
+
         $tweets_array[] = $tweet;
       }
 
@@ -239,6 +242,7 @@
           <p>
             <?php echo $tweet_each['tweet']; ?><span class="name"> (<?php echo $tweet_each['nick_name']; ?>) </span>
             [<a href="index.php?res=<?php echo $tweet_each['tweet_id']; ?>">Re</a>]
+            <a href="#">いいね！</a> <a href="#">いいねを取り消す</a>
           </p>
           <p class="day">
             <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
