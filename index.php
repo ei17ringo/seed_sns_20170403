@@ -115,12 +115,26 @@
       
       $tweets_array = array();
       while ($tweet = mysqli_fetch_assoc($tweets)) {
-        // $tweetには$tweet['tweet_id']が含まれている
+        // $tweetには$tweet['tweet_id']が含まれている(いいね機能の実装のための処理)
         $sql = 'SELECT COUNT(*) as `like_flag` FROM `likes` WHERE `tweet_id` = '.$tweet['tweet_id'].' AND `member_id` = '.$_SESSION['login_member_id'];
+
+        $likes = mysqli_query($db,$sql) or die(mysqli_error($db));
+        $like = mysqli_fetch_assoc($likes);
+
+        // echo '<pre>';
+        // var_dump('記事のID');
+        // var_dump($tweet['tweet_id']);
+        // var_dump('ログインした人がlikeしてるかどうか');
+        // var_dump($like);
+        // echo '</pre>';
+
+        $tweet['like_flag'] = $like['like_flag'];
 
         $tweets_array[] = $tweet;
       }
-
+      // echo '<pre>';
+      // var_dump($tweets_array);      
+      // echo '</pre>';
       //返信の場合
       if (isset($_REQUEST['res'])){
       		//返信元のデータ（つぶやきとニックネーム）を取得する
@@ -242,7 +256,15 @@
           <p>
             <?php echo $tweet_each['tweet']; ?><span class="name"> (<?php echo $tweet_each['nick_name']; ?>) </span>
             [<a href="index.php?res=<?php echo $tweet_each['tweet_id']; ?>">Re</a>]
-            <a href="#">いいね！</a> <a href="#">いいねを取り消す</a>
+            <?php if ($tweet_each['like_flag'] == 1){
+                //すでにいいねされているので、「いいねを取り消す」を表示
+            ?>
+                <a href="#"><small>いいねを取り消す</small></a>
+            <?php }else{ 
+                //まだいいねされていないので「いいね」を表示
+            ?>
+              <a href="like.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>"><small>いいね！</small></a> 
+            <?php } ?>
           </p>
           <p class="day">
             <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
